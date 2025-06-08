@@ -1,0 +1,6 @@
+[submodule "src/models/sm_model"]
+	path = src/models/sm_model
+	url = git@github.com:sydsim/ss-sm-model.git
+[submodule "src/losses/sm_loss"]
+	path = src/losses/sm_loss
+	url = git@github.com:sydsim/ss-sm-loss.git

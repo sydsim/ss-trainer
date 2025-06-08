@@ -11,8 +11,8 @@ from torch.optim import AdamW
 
 
 from datasets.klines_dataset import KlinesDataset
-from models.basic_model import BasicModel
-from losses.basic_loss import BasicLoss
+from models.sm_model import CustomModel
+from losses.sm_loss import CustomLoss
 
 
 
@@ -135,12 +135,12 @@ def main(
         "hidden_dim": 32,
         "num_layers": 2,
     }
-    model = BasicModel(
+    model = CustomModel(
         input_dim = dataset.num_features,
         **params
     )
 
-    loss_function = BasicLoss()
+    loss_function = CustomLoss()
 
     train_dataloader = DataLoader(
         train_dataset,
