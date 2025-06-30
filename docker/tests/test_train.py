@@ -8,8 +8,9 @@ from torch.optim import AdamW
 
 from src.common.dataset import DummyKlinesDataset
 from src.common.normalize import robust_zscore_norm
-from src.basic.basic_model import BasicModel
 from src.train.train import train
+
+from models import CustomModel
 
 
 def test_train():
@@ -59,7 +60,7 @@ def test_train():
     train_dataset = ConcatDataset(train_dataset_list)
     val_dataset = ConcatDataset(val_dataset_list)
 
-    model = BasicModel(
+    model = CustomModel(
         input_dim=dataset.num_features,
     )
     optimizer = AdamW(model.parameters())

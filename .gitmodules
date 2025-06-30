@@ -1,0 +1,6 @@
+[submodule "docker/src/sm_loss"]
+	path = docker/src/sm_loss
+	url = git@github.com:sydsim/ss-sm-loss.git
+[submodule "docker/src/sm_model"]
+	path = docker/src/sm_model
+	url = git@github.com:sydsim/ss-sm-model.git

@@ -6,12 +6,12 @@ import torch
 from torch.utils.data import ConcatDataset, Subset
 from torch.optim import AdamW
 
-
 from src.common.dataset import KlinesDataset
-from src.common.basic_model import BasicModel
 from src.common.normalize import robust_zscore_norm
 from src.common.random import set_random_seed
 from src.train.train import train
+
+from src.sm_model.models import CustomModel
 
 
 def main(
@@ -80,7 +80,7 @@ def main(
         "num_layers": num_layers,
         "dropout": dropout,
     }
-    model = BasicModel(
+    model = CustomModel(
         input_dim=dataset.num_features,
         **params
     )

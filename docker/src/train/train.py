@@ -7,7 +7,7 @@ from pathlib import Path
 import torch
 from torch.utils.data import DataLoader
 
-from src.basic.basic_loss import BasicLoss
+from src.sm_loss.losses import CustomLoss
 
 
 def train_one_epoch(model, dataloader, loss_function, optimizer):
@@ -81,7 +81,7 @@ def train(
         best_avg_epoch = -1
         best_state_dict = None
 
-    loss_function = BasicLoss()
+    loss_function = CustomLoss()
 
     train_dataloader = DataLoader(
         train_dataset,

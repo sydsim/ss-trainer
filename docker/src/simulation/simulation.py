@@ -5,11 +5,12 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader, Subset
 
-from src.basic.basic_model import BasicModel
 from src.basic.basic_state import BasicState
 from src.common.normalize import robust_zscore_norm, softmax
 from src.simulation.evaluation import evaluate
 from src.simulation.datapoint import DataPoint
+
+from src.sm_model.models import CustomModel
 
 
 def validation_test(model, dataloader):
@@ -159,7 +160,7 @@ def run_simulation(
         )
         model_list = []
         for seed in range(num_seeds):
-            model = BasicModel(
+            model = CustomModel(
                 input_dim=dataset.num_features,
                 **params
             )
