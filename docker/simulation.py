@@ -27,8 +27,6 @@ def main(
     initial_balance,
     order_threshold,
     signal_threshold,
-    alpha,
-    beta,
     trade_lifecycle,
 
     device="cuda",
@@ -68,8 +66,6 @@ def main(
         initial_balance,
         order_threshold,
         signal_threshold,
-        alpha,
-        beta,
         trade_lifecycle,
     )
 
@@ -100,8 +96,6 @@ if __name__ == "__main__":
 
     parser.add_argument("--order-threshold", type=float, default=0.9)
     parser.add_argument("--signal-threshold", type=float, default=0.01)
-    parser.add_argument("--alpha", type=float, default=2)
-    parser.add_argument("--beta", type=float, default=1)
     parser.add_argument("--trade-lifecycle", type=int, default=20)
     args = parser.parse_args()
 
@@ -127,7 +121,5 @@ if __name__ == "__main__":
 
         args.order_threshold,
         args.signal_threshold,
-        args.alpha,
-        args.beta,
         args.trade_lifecycle,
     )
