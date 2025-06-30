@@ -1,13 +1,13 @@
 import torch.nn as nn
 
 
-
 class BasicModel(nn.Module):
     def __init__(
         self,
         input_dim,
-        hidden_dim = 64,
-        num_layers = 2,
+        hidden_dim=64,
+        num_layers=2,
+        dropout=0.1,
     ):
         super().__init__()
 
@@ -24,10 +24,11 @@ class BasicModel(nn.Module):
                 for layer in [
                     nn.Linear(hidden_dim, hidden_dim),
                     nn.ReLU(),
-                ] 
+                ]
             ],
             nn.Linear(hidden_dim, 3)
         )
+
     def forward(self, x):
         res = self.module(x[:, -1])
         return res

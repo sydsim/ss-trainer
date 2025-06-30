@@ -1,23 +1,22 @@
 
 from datetime import datetime, timedelta
+import argparse
 import pickle
 import sagemaker
 from sagemaker.estimator import Estimator
-from sagemaker.experiments.experiment import Experiment
-from sagemaker.tuner import HyperparameterTuner, ContinuousParameter, IntegerParameter
-from sagemaker.inputs import TrainingInput
+from sagemaker.tuner import HyperparameterTuner, ContinuousParameter, IntegerParameter, CategoricalParameter
 
 
 session = sagemaker.Session()
 image_uri = "101778506059.dkr.ecr.ap-southeast-1.amazonaws.com/ss-trainer:latest"
 
+
 def launch_fold_tuning(
     trial_id,
-    seed,
     target_symbols,
+    seed,
     fold_number,
     dataset_start_date,
-    period_train_len,
     period_val_len,
     input_length,
     prediction_length,
@@ -28,20 +27,21 @@ def launch_fold_tuning(
 
     estimator = Estimator(
         image_uri=image_uri,
-        entry_point="train.py",     
+        entry_point="train.py",
         source_dir="src/",
         role="arn:aws:iam::101778506059:role/SageMakerExecutionRole",
         instance_count=1,
         instance_type="ml.g4dn.xlarge",
         output_path=f"s3://ss-data-train/model/{trial_id}/{seed}/{fold_number}/",
-        hyperparameters={ # 고정값
+        hyperparameters={  # 고정값
             "seed": seed,
             "target-symbols": ",".join(target_symbols),
             "period-start-date": period_start_date,
-            "period-train-len": period_train_len,
             "period-val-len": period_val_len,
             "input-length": input_length,
             "prediction-length": prediction_length,
+            "learning-rate": 1e-4,
+            "dropout": 0.2,
         },
         base_job_name=f"ss-trainer-{trial_id}-{seed}-{fold_number}",
         input_mode="FastFile",
@@ -50,8 +50,10 @@ def launch_fold_tuning(
     )
 
     hyperparameter_ranges = {
-        "learning-rate": ContinuousParameter(1e-4, 1e-1),
         "dropout": ContinuousParameter(1e-4, 1e-1),
+        "period-train-len": CategoricalParameter([90, 365, 365 * 3]),
+        "hidden-dims": IntegerParameter(16, 128),
+        "num-layer": IntegerParameter(1, 4),
     }
 
     tuner = HyperparameterTuner(
@@ -66,7 +68,7 @@ def launch_fold_tuning(
         objective_type="Minimize",
         hyperparameter_ranges=hyperparameter_ranges,
         max_jobs=100,
-        max_parallel_jobs=1,
+        max_parallel_jobs=8,
         base_tuning_job_name=f"ss-trainer-{trial_id}-{seed}-{fold_number}-tuner",
     )
 
@@ -83,32 +85,37 @@ def launch_fold_tuning(
     )
     return tuner
 
-def main():
-    train_data_dir = "s3://ss-data-train/dataset/20250522"
+
+def main(
+    train_data_dir,
+    dataset_start_date,
+    target_symbols,
+    period_val_len,
+    input_length,
+    prediction_length,
+    num_seed,
+    num_fold,
+):
+    dataset_start_date = datetime.fromisoformat(dataset_start_date)
+    target_symbols = target_symbols.strip().split(",")
+
     trial_id = datetime.now().strftime("%m%d%H%M%S")
-    target_symbols = ["BTCUSDT", "SOLUSDT", "ADAUSDT"]
-    dataset_start_date = datetime(2021, 1, 1)
-    period_train_len = 90
-    period_val_len = 30
-    input_length = 240
-    prediction_length = 20
 
     fold_tuners = []
-    for seed in range(5):
-        for fold_number in range(3):
+    for seed in range(num_seed):
+        for fold_number in range(num_fold):
             tuner = launch_fold_tuning(
                 trial_id,
-                seed,
                 target_symbols,
+                seed,
                 fold_number,
                 dataset_start_date,
-                period_train_len,
                 period_val_len,
                 input_length,
                 prediction_length,
                 train_data_dir,
             )
-            fold_tuners.append((f["fold"], tuner))
+            fold_tuners.append((fold_number, tuner))
 
     # 모든 튜닝 잡이 끝난 뒤
     final_params = {}
@@ -126,4 +133,37 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+
+    train_data_dir = "s3://ss-data-train/dataset/20250522"
+    dataset_start_date = datetime(2023, 1, 1)
+    target_symbols = ["BTCUSDT", "ETHUSDT", "XRPUSDT", "SOLUSDT", "ADAUSDT"]
+    period_val_len = 30
+    input_length = 240
+    prediction_length = 20
+
+    parser.add_argument('--train-data-dir', type=str, default="s3://ss-data-train/dataset/20250522")
+    parser.add_argument('--train-start-date', type=str, default="2024-01-01")
+
+    parser.add_argument("--target-symbols", type=str, default="BTCUSDT,ETHUSDT,XRPUSDT,SOLUSDT,ADAUSDT")
+    parser.add_argument("--period-val-len", type=int, default=30)
+    parser.add_argument("--input-length", type=int, default=240)
+    parser.add_argument("--prediction-length", type=int, default=20)
+
+    parser.add_argument("--num-seed", type=int, default=10)
+    parser.add_argument("--num-fold", type=int, default=24)
+
+    args = parser.parse_args()
+
+    main(
+        args.train_data_dir,
+        args.train_start_date,
+
+        args.target_symbols,
+        args.period_val_len,
+        args.input_length,
+        args.prediction_length,
+
+        args.num_seed,
+        args.num_fold,
+    )
