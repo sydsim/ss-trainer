@@ -119,12 +119,16 @@ class BasicState:
         self, timestamp, base_price, prob_long, prob_short,
         order_threshold, threshold_long, threshold_short, signal_threshold
     ):
+        pred_side = 0
         if prob_long > order_threshold:
             pred_side = 1
             expected_profit = threshold_long
         elif prob_short > order_threshold:
             pred_side = 2
             expected_profit = threshold_short
+
+        if pred_side == 0:
+            return
 
         if self.position_side == 0:
             if expected_profit > signal_threshold:

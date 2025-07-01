@@ -24,10 +24,15 @@ def main(
     prediction_length,
     hidden_dim,
     num_layers,
+
     initial_balance,
+
     order_threshold,
     signal_threshold,
     trade_lifecycle,
+
+    alpha,
+    beta,
 
     device="cuda",
 ):
@@ -67,6 +72,9 @@ def main(
         order_threshold,
         signal_threshold,
         trade_lifecycle,
+
+        alpha,
+        beta,
     )
 
     print(f"job duration={(datetime.now() - job_start_time).total_seconds()}")
@@ -92,11 +100,15 @@ if __name__ == "__main__":
     parser.add_argument("--hidden-dim", type=int)
     parser.add_argument("--num-layers", type=int)
 
-    parser.add_argument("--initial-balance", type=float, default=1e7)
+    parser.add_argument("--initial-balance", type=float, default=1e6)
 
     parser.add_argument("--order-threshold", type=float, default=0.9)
     parser.add_argument("--signal-threshold", type=float, default=0.01)
     parser.add_argument("--trade-lifecycle", type=int, default=20)
+
+    parser.add_argument("--alpha", type=float, default=2)
+    parser.add_argument("--beta", type=float, default=1)
+
     args = parser.parse_args()
 
     main(
@@ -122,4 +134,7 @@ if __name__ == "__main__":
         args.order_threshold,
         args.signal_threshold,
         args.trade_lifecycle,
+
+        args.alpha,
+        args.beta,
     )

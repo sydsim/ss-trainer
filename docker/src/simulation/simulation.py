@@ -5,12 +5,12 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader, Subset
 
-from src.basic.basic_state import BasicState
 from src.common.normalize import robust_zscore_norm, softmax
 from src.simulation.evaluation import evaluate
 from src.simulation.datapoint import DataPoint
 
 from src.sm_model.models import CustomModel
+from src.sm_state.states import CustomState
 
 
 def validation_test(model, dataloader):
@@ -98,10 +98,14 @@ def run(
 
         y_pred = y_preds_all[index, ...]
         prob = np.median(y_pred, axis=-1)
+        prob_hold = prob[0]
         prob_long = prob[1]
         prob_short = prob[2]
 
-        state.open_order(timestamp, base_price, prob_long, prob_short, order_threshold, threshold_long, threshold_short, signal_threshold)
+        state.open_order(
+            timestamp, base_price, prob_hold, prob_long, prob_short,
+            order_threshold, threshold_long, threshold_short, signal_threshold
+        )
 
 
 def run_simulation(
@@ -124,13 +128,21 @@ def run_simulation(
     signal_threshold,
     trade_lifecycle,
 
+    alpha,
+    beta,
+
     batch_size=1024,
 ):
     params = {
         "hidden_dim": hidden_dim,
         "num_layers": num_layers,
     }
-    state = BasicState(initial_balance=initial_balance, trade_lifecycle=trade_lifecycle)
+    state = CustomState(
+        initial_balance=initial_balance,
+        trade_lifecycle=trade_lifecycle,
+        alpha=alpha,
+        beta=beta,
+    )
 
     for fold_number in range(num_folds):
         start_date = period_start_date + timedelta(days=period_val_len * fold_number)

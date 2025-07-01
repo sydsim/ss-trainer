@@ -10,7 +10,7 @@ from src.common.dataset import DummyKlinesDataset
 from src.common.normalize import robust_zscore_norm
 from src.train.train import train
 
-from models import CustomModel
+from src.sm_model.models import CustomModel
 
 
 def test_train():

@@ -4,3 +4,6 @@
 [submodule "docker/src/sm_model"]
 	path = docker/src/sm_model
 	url = git@github.com:sydsim/ss-sm-model.git
+[submodule "docker/src/sm_state"]
+	path = docker/src/sm_state
+	url = git@github.com:sydsim/ss-sm-state.git
